@@ -1,32 +1,32 @@
-# AI Prompts Documentation
+ AI Prompts Documentation
 
-This file details the Prompt Engineering workflow and structural guidelines implemented in the **Coverly AI** Cover Letter Generator.
+This file details the Prompt Engineering workflow and structural guidelines implemented in the Coverly AI Cover Letter Generator.
 
 ---
 
-## 🧠 System Prompt Strategy (Anti-AI Guardrails)
+ System Prompt Strategy (Anti-AI Guardrails)
 
-The main challenge with standard AI-generated cover letters is that they sound robotic, use highly predictable structures, and rely on standard buzzwords. To bypass these limitations, we designed a custom **Career Consultant Persona Prompt**.
+The main challenge with standard AI-generated cover letters is that they sound robotic, use highly predictable structures, and rely on standard buzzwords. To bypass these limitations, we designed a custom Career Consultant Persona Prompt.
 
-### Guardrails Applied
-1. **Banned Openings**: The system explicitly forbids standard opening formulas:
-   - *❌ "I am writing to express my enthusiastic interest..."*
-   - *❌ "It is with great pleasure that I submit my application..."*
-   - *❌ "I am delighted to apply for..."*
+ Guardrails Applied
+1. Banned Openings: The system explicitly forbids standard opening formulas:
+   - "I am writing to express my enthusiastic interest..."
+   - "It is with great pleasure that I submit my application..."
+   - "I am delighted to apply for..."
    Instead, the AI is instructed to start with a direct, custom, value-focused connection.
-2. **Banned Words & Buzzwords**: The AI is instructed to avoid cliché qualifiers:
-   - *❌ pleased, excited, delighted* (overused emotional fillers)
-   - *❌ synergy, paradigm, cutting-edge, beacon, testament, revolutionary, beacon* (classic AI giveaways)
-3. **Structured Flow**:
-   - **Header**: Standard dynamic coordinates.
-   - **Hook**: First sentence introduces a professional theme or company challenge.
-   - **Accomplishments Section**: Connects skills directly to concrete results rather than list-formatting them.
-   - **Cultural Match**: Mentions why the target company makes sense based on the job description.
-   - **Call to Action**: A brief closing request for an interview.
+2. Banned Words & Buzzwords: The AI is instructed to avoid cliché qualifiers:
+   - pleased, excited, delighted (overused emotional fillers)
+   - synergy, paradigm, cutting-edge, beacon, testament, revolutionary, beacon (classic AI giveaways)
+3. Structured Flow:
+   - Header: Standard dynamic coordinates.
+   - Hook: First sentence introduces a professional theme or company challenge.
+   - Accomplishments Section: Connects skills directly to concrete results rather than list-formatting them.
+   - Cultural Match: Mentions why the target company makes sense based on the job description.
+   - Call to Action: A brief closing request for an interview.
 
 ---
 
-## 📝 Gemini API Prompt Payload Schema
+ 📝 Gemini API Prompt Payload Schema
 
 The following template is programmatically generated in [`app.js`](file:///d:/Prodesk%20IT/ai-cover-letter-generator/app.js) and [`api/generate.js`](file:///d:/Prodesk%20IT/ai-cover-letter-generator/api/generate.js):
 
@@ -57,9 +57,9 @@ Guidelines to ensure it DOES NOT sound AI-generated:
 
 ---
 
-## 🧪 Simulation Fallback Template
+ 🧪 Simulation Fallback Template
 
-If the user has not configured their Gemini key and has not deployed a serverless function, the system runs in **Simulation Mode**, interpolating variables into a highly polished mockup to satisfy Phase 1 QA constraints:
+If the user has not configured their Gemini key and has not deployed a serverless function, the system runs in Simulation Mode, interpolating variables into a highly polished mockup to satisfy Phase 1 QA constraints:
 
 ```javascript
 `# ${name}

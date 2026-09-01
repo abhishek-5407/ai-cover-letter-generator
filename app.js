@@ -16,6 +16,8 @@ const dom = {
   form: document.getElementById('coverLetterForm'),
   candidateName: document.getElementById('candidateName'),
   jobRole: document.getElementById('jobRole'),
+  roleDropdownToggle: document.getElementById('roleDropdownToggle'),
+  roleDropdownMenu: document.getElementById('roleDropdownMenu'),
   companyName: document.getElementById('companyName'),
   jobDescription: document.getElementById('jobDescription'),
   
@@ -84,6 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   setupEventListeners();
+  setupJobRoleDropdown();
 });
 
 function setupEventListeners() {
@@ -92,7 +95,10 @@ function setupEventListeners() {
   
   // Input validations on blur
   dom.candidateName.addEventListener('blur', () => validateField(dom.candidateName, dom.nameError));
-  dom.jobRole.addEventListener('blur', () => validateField(dom.jobRole, dom.roleError));
+  dom.jobRole.addEventListener('blur', () => {
+    // Small delay to allow click on dropdown items to register before field validation
+    setTimeout(() => validateField(dom.jobRole, dom.roleError), 150);
+  });
   dom.companyName.addEventListener('blur', () => validateField(dom.companyName, dom.companyError));
   dom.jobDescription.addEventListener('blur', () => validateField(dom.jobDescription, dom.skillsError));
   
@@ -133,6 +139,190 @@ function setupEventListeners() {
   dom.toggleApiKeyBtn.addEventListener('click', toggleApiKeyVisibility);
   dom.testKeyBtn.addEventListener('click', handleTestApiKey);
   dom.saveSettingsBtn.addEventListener('click', handleSaveSettings);
+}
+
+// Custom Job Role Dropdown Logic
+const POPULAR_JOB_ROLES = [
+  { role: 'Frontend Developer', category: 'Engineering' },
+  { role: 'Senior Frontend Engineer', category: 'Engineering' },
+  { role: 'Backend Developer', category: 'Engineering' },
+  { role: 'Senior Backend Engineer', category: 'Engineering' },
+  { role: 'Full Stack Developer', category: 'Engineering' },
+  { role: 'MERN Stack Developer', category: 'Engineering' },
+  { role: 'Software Engineer', category: 'Engineering' },
+  { role: 'Senior Software Engineer', category: 'Engineering' },
+  { role: 'React Developer', category: 'Engineering' },
+  { role: 'Node.js Developer', category: 'Engineering' },
+  { role: 'Java Developer', category: 'Engineering' },
+  { role: 'Python Developer', category: 'Engineering' },
+  { role: 'Mobile App Developer (iOS / Android)', category: 'Mobile' },
+  { role: 'Flutter Developer', category: 'Mobile' },
+  { role: 'DevOps Engineer', category: 'Cloud & DevOps' },
+  { role: 'Cloud Solutions Architect', category: 'Cloud & DevOps' },
+  { role: 'Site Reliability Engineer (SRE)', category: 'Cloud & DevOps' },
+  { role: 'Data Scientist', category: 'Data & AI' },
+  { role: 'Data Analyst', category: 'Data & AI' },
+  { role: 'AI / Machine Learning Engineer', category: 'Data & AI' },
+  { role: 'UI/UX Designer', category: 'Design' },
+  { role: 'Product Designer', category: 'Design' },
+  { role: 'Product Manager', category: 'Product' },
+  { role: 'Project Manager / Scrum Master', category: 'Management' },
+  { role: 'QA / Software Tester', category: 'QA' },
+  { role: 'Cybersecurity Analyst', category: 'Security' },
+  { role: 'Business Analyst', category: 'Business' },
+  { role: 'Digital Marketing Specialist', category: 'Marketing' },
+  { role: 'HR Manager / Recruiter', category: 'HR' },
+  { role: 'Technical Content Writer', category: 'Content' }
+];
+
+let activeDropdownIndex = -1;
+
+function setupJobRoleDropdown() {
+  if (!dom.jobRole || !dom.roleDropdownMenu) return;
+
+  // Render initial list
+  renderRoleDropdown('');
+
+  // Input event: Filter as user types
+  dom.jobRole.addEventListener('input', (e) => {
+    renderRoleDropdown(e.target.value.trim());
+    openRoleDropdown();
+  });
+
+  // Focus event: Open dropdown when input gets focus
+  dom.jobRole.addEventListener('focus', () => {
+    renderRoleDropdown(dom.jobRole.value.trim());
+    openRoleDropdown();
+  });
+
+  // Toggle button click
+  if (dom.roleDropdownToggle) {
+    dom.roleDropdownToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (dom.roleDropdownMenu.classList.contains('hidden')) {
+        renderRoleDropdown(dom.jobRole.value.trim());
+        openRoleDropdown();
+        dom.jobRole.focus();
+      } else {
+        closeRoleDropdown();
+      }
+    });
+  }
+
+  // Keyboard navigation
+  dom.jobRole.addEventListener('keydown', (e) => {
+    const items = dom.roleDropdownMenu.querySelectorAll('.dropdown-item');
+    if (dom.roleDropdownMenu.classList.contains('hidden') || items.length === 0) {
+      if (e.key === 'ArrowDown') {
+        renderRoleDropdown(dom.jobRole.value.trim());
+        openRoleDropdown();
+      }
+      return;
+    }
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      activeDropdownIndex = (activeDropdownIndex + 1) % items.length;
+      updateDropdownActiveItem(items);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      activeDropdownIndex = (activeDropdownIndex - 1 + items.length) % items.length;
+      updateDropdownActiveItem(items);
+    } else if (e.key === 'Enter') {
+      if (activeDropdownIndex >= 0 && items[activeDropdownIndex]) {
+        e.preventDefault();
+        selectRoleItem(items[activeDropdownIndex].dataset.role);
+      }
+    } else if (e.key === 'Escape') {
+      closeRoleDropdown();
+    }
+  });
+
+  // Close when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!dom.jobRole.contains(e.target) && 
+        !dom.roleDropdownMenu.contains(e.target) && 
+        !(dom.roleDropdownToggle && dom.roleDropdownToggle.contains(e.target))) {
+      closeRoleDropdown();
+    }
+  });
+}
+
+function openRoleDropdown() {
+  dom.roleDropdownMenu.classList.remove('hidden');
+  if (dom.roleDropdownToggle) {
+    dom.roleDropdownToggle.classList.add('open');
+  }
+}
+
+function closeRoleDropdown() {
+  dom.roleDropdownMenu.classList.add('hidden');
+  if (dom.roleDropdownToggle) {
+    dom.roleDropdownToggle.classList.remove('open');
+  }
+  activeDropdownIndex = -1;
+}
+
+function renderRoleDropdown(filterText = '') {
+  dom.roleDropdownMenu.innerHTML = '';
+  activeDropdownIndex = -1;
+
+  const query = filterText.toLowerCase();
+  const filtered = POPULAR_JOB_ROLES.filter(item => 
+    item.role.toLowerCase().includes(query) || item.category.toLowerCase().includes(query)
+  );
+
+  if (filtered.length === 0) {
+    const emptyEl = document.createElement('div');
+    emptyEl.className = 'dropdown-empty';
+    emptyEl.textContent = 'No matching roles. Type your custom role!';
+    dom.roleDropdownMenu.appendChild(emptyEl);
+    return;
+  }
+
+  filtered.forEach((item) => {
+    const li = document.createElement('div');
+    li.className = 'dropdown-item';
+    li.dataset.role = item.role;
+    li.setAttribute('role', 'option');
+    li.innerHTML = `
+      <span>${highlightMatch(item.role, query)}</span>
+      <span class="item-category">${item.category}</span>
+    `;
+
+    li.addEventListener('mousedown', (e) => {
+      e.preventDefault(); // Prevent input blur before selection
+      selectRoleItem(item.role);
+    });
+
+    dom.roleDropdownMenu.appendChild(li);
+  });
+}
+
+function highlightMatch(text, query) {
+  if (!query) return text;
+  const index = text.toLowerCase().indexOf(query);
+  if (index === -1) return text;
+  const match = text.slice(index, index + query.length);
+  return `${text.slice(0, index)}<strong style="color: var(--secondary); font-weight:700;">${match}</strong>${text.slice(index + query.length)}`;
+}
+
+function updateDropdownActiveItem(items) {
+  items.forEach((item, i) => {
+    if (i === activeDropdownIndex) {
+      item.classList.add('active');
+      item.scrollIntoView({ block: 'nearest' });
+    } else {
+      item.classList.remove('active');
+    }
+  });
+}
+
+function selectRoleItem(roleName) {
+  dom.jobRole.value = roleName;
+  validateField(dom.jobRole, dom.roleError);
+  closeRoleDropdown();
+  dom.jobRole.focus();
 }
 
 // ==========================================================================
