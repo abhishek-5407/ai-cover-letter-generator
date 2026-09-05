@@ -1373,3 +1373,28 @@ button {
     color: black !important;
   }
 }
+
+/* Print Styles for PDF Download */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #letterOutput, #letterOutput * {
+    visibility: visible;
+  }
+  #letterOutput {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 20mm;
+    color: black !important;
+    background: white !important;
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+  .bg-gradient-top, .bg-gradient-bottom, .navbar, .app-footer, .input-section {
+    display: none !important;
+  }
+}

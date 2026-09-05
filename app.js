@@ -1133,9 +1133,9 @@ function renderOutputLetter(markdown) {
   dom.letterOutput.focus();
 }
 
-// ==========================================================================
+// 
 // Copy and Download Exporters
-// ==========================================================================
+// 
 async function handleCopyToClipboard() {
   if (!state.generatedMarkdown) return;
   
@@ -1181,7 +1181,7 @@ function handleDownloadTxt() {
 
 // 
 // Settings Modal & API Key Storage
-// ==========================================================================
+// 
 function openSettingsModal() {
   dom.settingsModal.classList.remove('hidden');
   dom.apiKeyInput.focus();
@@ -1264,9 +1264,9 @@ function updateApiStatusIndicator() {
   }
 }
 
-// ==========================================================================
+// 
 // Toast Helper
-// ==========================================================================
+// 
 let toastTimeout = null;
 
 function showToast(message, type = 'success') {
