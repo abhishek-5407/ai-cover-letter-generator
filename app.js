@@ -1184,30 +1184,52 @@ function handleDownloadPdf() {
   
   showToast('Generating PDF...');
   
-  // By passing a raw HTML string instead of a DOM node, html2pdf renders it in an isolated 
-  // iframe, completely ignoring the site's dark-mode CSS (which was causing white text on white bg).
-  const htmlContent = `
-    <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11pt; color: #000000; line-height: 1.6; padding: 25mm 20mm;">
+  // Create a temporary container that is actually attached to the DOM so html2canvas can see it.
+  // We hide it behind the main app using z-index.
+  const container = document.createElement('div');
+  container.style.position = 'absolute';
+  container.style.top = '0';
+  container.style.left = '0';
+  container.style.width = '800px';
+  container.style.padding = '40px';
+  container.style.backgroundColor = '#ffffff';
+  container.style.color = '#000000';
+  container.style.zIndex = '-9999'; // Hidden behind app
+  
+  // Insert the cover letter HTML
+  container.innerHTML = `
+    <div style="font-family: Arial, sans-serif; font-size: 15px; line-height: 1.6;">
       ${dom.letterOutput.innerHTML}
     </div>
   `;
   
+  // Force all child elements to be black text so Dark Mode CSS doesn't make them white!
+  const children = container.querySelectorAll('*');
+  children.forEach(child => {
+    child.style.color = '#000000';
+  });
+
+  document.body.appendChild(container);
+  
   const fileNameSafe = dom.companyName.value.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'company';
   
   const opt = {
-    margin:       0,
+    margin:       0.5,
     filename:     `cover_letter_${fileNameSafe}.pdf`,
     image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2, logging: false },
+    html2canvas:  { scale: 2, windowWidth: 800 },
     jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
   };
   
   if (window.html2pdf) {
-    window.html2pdf().set(opt).from(htmlContent).save().then(() => {
+    window.html2pdf().set(opt).from(container).save().then(() => {
+      // Remove the container after the PDF is generated
+      document.body.removeChild(container);
       showToast('PDF downloaded successfully!');
     });
   } else {
-    window.print(); // Fallback if library failed to load
+    document.body.removeChild(container);
+    window.print();
   }
 }
 
