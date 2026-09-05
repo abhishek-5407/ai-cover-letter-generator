@@ -144,7 +144,7 @@ function setupEventListeners() {
   
   // Exporters
   dom.copyBtn.addEventListener('click', handleCopyToClipboard);
-  dom.downloadPdfBtn.addEventListener('click', () => window.print());
+  dom.downloadPdfBtn.addEventListener('click', handleDownloadPdf);
   dom.downloadTxtBtn.addEventListener('click', handleDownloadTxt);
   
   // Settings Modal Events
@@ -1177,6 +1177,38 @@ function handleDownloadTxt() {
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
   showToast('Text file downloaded successfully!');
+}
+
+function handleDownloadPdf() {
+  if (!state.generatedMarkdown) return;
+  
+  showToast('Generating PDF...');
+  
+  // By passing a raw HTML string instead of a DOM node, html2pdf renders it in an isolated 
+  // iframe, completely ignoring the site's dark-mode CSS (which was causing white text on white bg).
+  const htmlContent = `
+    <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11pt; color: #000000; line-height: 1.6; padding: 25mm 20mm;">
+      ${dom.letterOutput.innerHTML}
+    </div>
+  `;
+  
+  const fileNameSafe = dom.companyName.value.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'company';
+  
+  const opt = {
+    margin:       0,
+    filename:     `cover_letter_${fileNameSafe}.pdf`,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, logging: false },
+    jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+  };
+  
+  if (window.html2pdf) {
+    window.html2pdf().set(opt).from(htmlContent).save().then(() => {
+      showToast('PDF downloaded successfully!');
+    });
+  } else {
+    window.print(); // Fallback if library failed to load
+  }
 }
 
 // 
