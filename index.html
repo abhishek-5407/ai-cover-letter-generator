@@ -98,12 +98,47 @@
             <span class="error-msg" id="companyError" role="alert">Please enter the company name</span>
           </div>
 
+          <!-- Key Skills Multi-Select Field -->
+          <div class="form-group dropdown-container" id="skillsGroup">
+            <label for="skillInput">
+              <span>Key Skills / Core Strengths <span class="required">*</span></span>
+              <span class="optional-badge">Select or Type</span>
+            </label>
+            <div class="tags-input-wrapper" id="tagsInputWrapper">
+              <div id="skillsTagsContainer" class="skills-tags-container">
+                <!-- Skill tag chips will render here dynamically -->
+              </div>
+              <input type="text" id="skillInput" class="skill-search-input" placeholder="Type or click dropdown to select skills..." autocomplete="off">
+              <button type="button" id="skillsDropdownToggle" class="dropdown-toggle-btn" aria-label="Toggle skills suggestions" tabindex="-1">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="chevron-icon">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                </svg>
+              </button>
+            </div>
+            <div id="skillsDropdownMenu" class="custom-dropdown-menu hidden" role="listbox" aria-label="Skills Suggestions"></div>
+            <!-- Quick Suggestion Pills -->
+            <div class="quick-skills-container" id="quickSkillsContainer">
+              <span class="quick-skills-label">Quick add:</span>
+              <button type="button" class="quick-skill-pill" data-skill="React.js">+ React</button>
+              <button type="button" class="quick-skill-pill" data-skill="Node.js">+ Node.js</button>
+              <button type="button" class="quick-skill-pill" data-skill="TypeScript">+ TypeScript</button>
+              <button type="button" class="quick-skill-pill" data-skill="Python">+ Python</button>
+              <button type="button" class="quick-skill-pill" data-skill="AWS">+ AWS</button>
+              <button type="button" class="quick-skill-pill" data-skill="SQL">+ SQL</button>
+              <button type="button" class="quick-skill-pill" data-skill="Tailwind CSS">+ Tailwind</button>
+            </div>
+            <span class="error-msg" id="skillsError" role="alert">Please select or type at least one key skill</span>
+          </div>
+
+          <!-- Job Description / Requirements Field -->
           <div class="form-group">
-            <label for="jobDescription">Key Skills / Job Description <span class="required">*</span></label>
+            <label for="jobDescription">
+              <span>Target Job Description / Requirements</span>
+              <span class="optional-badge">Paste from Job Post</span>
+            </label>
             <textarea id="jobDescription" name="jobDescription" rows="4"
-              placeholder="Paste the job description or enter key skills required for the job role..."
-              required></textarea>
-            <span class="error-msg" id="skillsError" role="alert">Please enter the key skills or job description</span>
+              placeholder="Paste key responsibilities or requirements from the LinkedIn / Indeed / Naukri job posting..."></textarea>
+            <span class="error-msg" id="jobDescError" role="alert">Please enter the job description or requirements</span>
           </div>
 
           <!-- PDF Resume Upload Dropzone -->

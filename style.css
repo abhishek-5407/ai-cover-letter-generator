@@ -203,6 +203,7 @@ body {
 @media (max-width: 1024px) {
   .workspace-grid {
     grid-template-columns: 1fr;
+    gap: 1.5rem;
   }
 }
 
@@ -254,6 +255,18 @@ form {
 @media (max-width: 640px) {
   .form-group-row {
     grid-template-columns: 1fr;
+  }
+  
+  .app-container {
+    padding: 1.25rem 1rem;
+  }
+  
+  .panel-input, .panel-preview {
+    padding: 1.35rem 1.15rem;
+  }
+  
+  .letter-output-wrapper {
+    padding: 1.25rem 1rem;
   }
 }
 
@@ -452,6 +465,151 @@ textarea.invalid + .error-msg {
   text-align: center;
   font-size: 0.825rem;
   color: var(--text-muted);
+}
+
+.dropdown-item.selected {
+  background-color: rgba(99, 102, 241, 0.2);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.dropdown-item-left {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.dropdown-item .item-check {
+  color: var(--success);
+  font-size: 0.9rem;
+}
+
+/* 
+   Tags Input Container for Multi-Select Skills
+   */
+.tags-input-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 2.75rem 0.45rem 0.65rem;
+  min-height: 48px;
+  background-color: rgba(15, 23, 42, 0.4);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  cursor: text;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.tags-input-wrapper:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.tags-input-wrapper:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.tags-input-wrapper.invalid {
+  border-color: var(--error) !important;
+  background-color: rgba(239, 68, 68, 0.05);
+}
+
+.skills-tags-container {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.skill-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(99, 102, 241, 0.18);
+  border: 1px solid rgba(99, 102, 241, 0.45);
+  color: #e0e7ff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  animation: tagPop 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes tagPop {
+  0% { transform: scale(0.85); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.skill-tag-remove {
+  background: transparent;
+  border: none;
+  color: #a5b4fc;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  padding: 0 0.15rem;
+  border-radius: 3px;
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.skill-tag-remove:hover {
+  color: #ffffff;
+  background: rgba(239, 68, 68, 0.35);
+}
+
+.skill-search-input {
+  flex: 1 1 140px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0.2rem 0.35rem !important;
+  font-size: 0.9rem !important;
+  color: var(--text-primary);
+  outline: none;
+}
+
+/* Quick Skills Suggestion Pills */
+.quick-skills-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.25rem;
+}
+
+.quick-skills-label {
+  font-size: 0.725rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.quick-skill-pill {
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.725rem;
+  font-weight: 500;
+  padding: 0.15rem 0.5rem;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.quick-skill-pill:hover {
+  background: rgba(99, 102, 241, 0.2);
+  color: var(--text-primary);
+  border-color: var(--primary);
+}
+
+.quick-skill-pill.selected {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--success);
+  border-color: rgba(16, 185, 129, 0.4);
 }
 
 /* 
@@ -942,9 +1100,15 @@ button {
 /* Action Footer Panel */
 .preview-actions {
   display: flex;
-  gap: 1rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
   margin-top: 1.25rem;
   transition: opacity var(--transition-normal);
+}
+
+.preview-actions .btn-secondary {
+  flex: 1 1 auto;
+  min-width: 120px;
 }
 
 .preview-actions.disabled {
@@ -1118,8 +1282,34 @@ button {
   z-index: 200;
   font-weight: 600;
   font-size: 0.9rem;
+  max-width: calc(100vw - 2rem);
+  box-sizing: border-box;
   animation: toast-enter 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   pointer-events: none;
+}
+
+@media (max-width: 480px) {
+  .logo-text {
+    font-size: 1.4rem;
+  }
+
+  .panel-title {
+    font-size: 1.25rem;
+  }
+
+  .preview-actions .btn-secondary {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+
+  .modal-footer {
+    flex-direction: column-reverse;
+    gap: 0.5rem;
+  }
+
+  .modal-footer button {
+    width: 100%;
+  }
 }
 
 .toast-icon {

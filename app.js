@@ -5,10 +5,11 @@
 
 // State Management
 const state = {
-  apiKey: localStorage.getItem('coverly_api_key') || import.meta.env.VITE_GEMINI_API_KEY || '',
+  apiKey: localStorage.getItem('coverly_api_key') || '',
   resumeText: '',
   generatedMarkdown: '',
   isGenerating: false,
+  selectedSkills: [],
 };
 
 // DOM Cache
@@ -19,13 +20,24 @@ const dom = {
   roleDropdownToggle: document.getElementById('roleDropdownToggle'),
   roleDropdownMenu: document.getElementById('roleDropdownMenu'),
   companyName: document.getElementById('companyName'),
+  
+  // Skills Multi-Select elements
+  tagsInputWrapper: document.getElementById('tagsInputWrapper'),
+  skillsTagsContainer: document.getElementById('skillsTagsContainer'),
+  skillInput: document.getElementById('skillInput'),
+  skillsDropdownToggle: document.getElementById('skillsDropdownToggle'),
+  skillsDropdownMenu: document.getElementById('skillsDropdownMenu'),
+  quickSkillsContainer: document.getElementById('quickSkillsContainer'),
+  skillsError: document.getElementById('skillsError'),
+  
+  // Job Description
   jobDescription: document.getElementById('jobDescription'),
+  jobDescError: document.getElementById('jobDescError'),
   
   // Errors
   nameError: document.getElementById('nameError'),
   roleError: document.getElementById('roleError'),
   companyError: document.getElementById('companyError'),
-  skillsError: document.getElementById('skillsError'),
   
   // Resume elements
   dropzone: document.getElementById('dropzone'),
@@ -87,6 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   setupEventListeners();
   setupJobRoleDropdown();
+  setupSkillsDropdown();
 });
 
 function setupEventListeners() {
@@ -100,7 +113,12 @@ function setupEventListeners() {
     setTimeout(() => validateField(dom.jobRole, dom.roleError), 150);
   });
   dom.companyName.addEventListener('blur', () => validateField(dom.companyName, dom.companyError));
-  dom.jobDescription.addEventListener('blur', () => validateField(dom.jobDescription, dom.skillsError));
+  
+  if (dom.jobDescription) {
+    dom.jobDescription.addEventListener('blur', () => {
+      if (dom.jobDescError) validateField(dom.jobDescription, dom.jobDescError);
+    });
+  }
   
   // File Dropzone Events
   dom.dropzone.addEventListener('click', () => dom.resumeUpload.click());
@@ -326,6 +344,398 @@ function selectRoleItem(roleName) {
 }
 
 // ==========================================================================
+// Multi-Select Key Skills Logic
+// ==========================================================================
+const POPULAR_SKILLS = [
+  // Programming & Frontend
+  { name: 'JavaScript', category: 'Frontend' },
+  { name: 'TypeScript', category: 'Frontend' },
+  { name: 'React.js', category: 'Frontend' },
+  { name: 'Next.js', category: 'Frontend' },
+  { name: 'Vue.js', category: 'Frontend' },
+  { name: 'Angular', category: 'Frontend' },
+  { name: 'HTML5 & CSS3', category: 'Frontend' },
+  { name: 'Tailwind CSS', category: 'Frontend' },
+  { name: 'Redux / State Management', category: 'Frontend' },
+  { name: 'Responsive Web Design', category: 'Frontend' },
+
+  // Backend & APIs
+  { name: 'Node.js', category: 'Backend' },
+  { name: 'Express.js', category: 'Backend' },
+  { name: 'Python', category: 'Backend' },
+  { name: 'Django / FastAPI', category: 'Backend' },
+  { name: 'Java', category: 'Backend' },
+  { name: 'Spring Boot', category: 'Backend' },
+  { name: 'Go (Golang)', category: 'Backend' },
+  { name: 'C# / .NET', category: 'Backend' },
+  { name: 'RESTful APIs', category: 'Backend' },
+  { name: 'GraphQL', category: 'Backend' },
+  { name: 'Microservices Architecture', category: 'Backend' },
+
+  // Databases
+  { name: 'SQL', category: 'Database' },
+  { name: 'PostgreSQL', category: 'Database' },
+  { name: 'MySQL', category: 'Database' },
+  { name: 'MongoDB', category: 'Database' },
+  { name: 'Redis', category: 'Database' },
+  { name: 'Firebase / Supabase', category: 'Database' },
+  { name: 'Prisma ORM', category: 'Database' },
+
+  // Cloud & DevOps
+  { name: 'AWS', category: 'Cloud & DevOps' },
+  { name: 'Google Cloud (GCP)', category: 'Cloud & DevOps' },
+  { name: 'Microsoft Azure', category: 'Cloud & DevOps' },
+  { name: 'Docker', category: 'Cloud & DevOps' },
+  { name: 'Kubernetes', category: 'Cloud & DevOps' },
+  { name: 'CI/CD Pipelines', category: 'Cloud & DevOps' },
+  { name: 'GitHub Actions', category: 'Cloud & DevOps' },
+  { name: 'Linux / Bash Scripting', category: 'Cloud & DevOps' },
+  { name: 'Terraform', category: 'Cloud & DevOps' },
+
+  // Mobile
+  { name: 'React Native', category: 'Mobile' },
+  { name: 'Flutter / Dart', category: 'Mobile' },
+  { name: 'iOS (Swift)', category: 'Mobile' },
+  { name: 'Android (Kotlin)', category: 'Mobile' },
+
+  // Data & AI
+  { name: 'Machine Learning', category: 'Data & AI' },
+  { name: 'Generative AI & LLMs', category: 'Data & AI' },
+  { name: 'Data Analysis / Pandas', category: 'Data & AI' },
+  { name: 'Power BI / Tableau', category: 'Data & AI' },
+
+  // Design & Product
+  { name: 'UI/UX Design', category: 'Design' },
+  { name: 'Figma / Prototyping', category: 'Design' },
+  { name: 'User Research', category: 'Design' },
+  { name: 'Product Strategy', category: 'Product' },
+
+  // Management & Methodologies
+  { name: 'Agile / Scrum', category: 'Management' },
+  { name: 'JIRA / Sprint Planning', category: 'Management' },
+  { name: 'Project Management', category: 'Management' },
+
+  // Core Strengths & Soft Skills
+  { name: 'Problem Solving', category: 'Core Strengths' },
+  { name: 'Team Leadership', category: 'Core Strengths' },
+  { name: 'Cross-functional Communication', category: 'Core Strengths' },
+  { name: 'Critical Thinking', category: 'Core Strengths' },
+  { name: 'System Architecture & Design', category: 'Core Strengths' }
+];
+
+let activeSkillsDropdownIndex = -1;
+
+function setupSkillsDropdown() {
+  if (!dom.skillInput || !dom.skillsDropdownMenu) return;
+
+  // Render initial tags & dropdown
+  renderSkillTags();
+  renderSkillsDropdown('');
+  setupQuickSkills();
+
+  // Focus on input when clicking wrapper
+  if (dom.tagsInputWrapper) {
+    dom.tagsInputWrapper.addEventListener('click', (e) => {
+      // Don't focus if clicked on a remove button or toggle
+      if (!e.target.closest('.skill-tag-remove') && !e.target.closest('.dropdown-toggle-btn')) {
+        dom.skillInput.focus();
+      }
+    });
+  }
+
+  // Input filter event
+  dom.skillInput.addEventListener('input', (e) => {
+    const val = e.target.value;
+    if (val.endsWith(',')) {
+      // If user typed comma, add the skill
+      const skillToAdd = val.slice(0, -1).trim();
+      if (skillToAdd) {
+        addSkill(skillToAdd);
+        dom.skillInput.value = '';
+      }
+      return;
+    }
+    renderSkillsDropdown(val.trim());
+    openSkillsDropdown();
+  });
+
+  // Focus event
+  dom.skillInput.addEventListener('focus', () => {
+    renderSkillsDropdown(dom.skillInput.value.trim());
+    openSkillsDropdown();
+  });
+
+  // Toggle button click
+  if (dom.skillsDropdownToggle) {
+    dom.skillsDropdownToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (dom.skillsDropdownMenu.classList.contains('hidden')) {
+        renderSkillsDropdown(dom.skillInput.value.trim());
+        openSkillsDropdown();
+        dom.skillInput.focus();
+      } else {
+        closeSkillsDropdown();
+      }
+    });
+  }
+
+  // Keyboard navigation & Enter key
+  dom.skillInput.addEventListener('keydown', (e) => {
+    const items = dom.skillsDropdownMenu.querySelectorAll('.dropdown-item');
+
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (!dom.skillsDropdownMenu.classList.contains('hidden') && activeSkillsDropdownIndex >= 0 && items[activeSkillsDropdownIndex]) {
+        const selectedSkill = items[activeSkillsDropdownIndex].dataset.skill;
+        toggleSkill(selectedSkill);
+        dom.skillInput.value = '';
+        renderSkillsDropdown('');
+      } else if (dom.skillInput.value.trim() !== '') {
+        addSkill(dom.skillInput.value.trim());
+        dom.skillInput.value = '';
+        renderSkillsDropdown('');
+      }
+      return;
+    }
+
+    if (e.key === 'Backspace' && dom.skillInput.value === '' && state.selectedSkills.length > 0) {
+      // Remove last skill on backspace
+      removeSkill(state.selectedSkills[state.selectedSkills.length - 1]);
+      return;
+    }
+
+    if (dom.skillsDropdownMenu.classList.contains('hidden') || items.length === 0) {
+      if (e.key === 'ArrowDown') {
+        renderSkillsDropdown(dom.skillInput.value.trim());
+        openSkillsDropdown();
+      }
+      return;
+    }
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      activeSkillsDropdownIndex = (activeSkillsDropdownIndex + 1) % items.length;
+      updateSkillsDropdownActiveItem(items);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      activeSkillsDropdownIndex = (activeSkillsDropdownIndex - 1 + items.length) % items.length;
+      updateSkillsDropdownActiveItem(items);
+    } else if (e.key === 'Escape') {
+      closeSkillsDropdown();
+    }
+  });
+
+  // Close when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!dom.tagsInputWrapper.contains(e.target) &&
+        !dom.skillsDropdownMenu.contains(e.target)) {
+      closeSkillsDropdown();
+    }
+  });
+}
+
+function openSkillsDropdown() {
+  dom.skillsDropdownMenu.classList.remove('hidden');
+  if (dom.skillsDropdownToggle) {
+    dom.skillsDropdownToggle.classList.add('open');
+  }
+}
+
+function closeSkillsDropdown() {
+  dom.skillsDropdownMenu.classList.add('hidden');
+  if (dom.skillsDropdownToggle) {
+    dom.skillsDropdownToggle.classList.remove('open');
+  }
+  activeSkillsDropdownIndex = -1;
+}
+
+function addSkill(skillName) {
+  const cleanName = skillName.trim();
+  if (!cleanName) return;
+
+  // Case-insensitive duplicate check
+  const exists = state.selectedSkills.some(s => s.toLowerCase() === cleanName.toLowerCase());
+  if (!exists) {
+    state.selectedSkills.push(cleanName);
+    renderSkillTags();
+    updateQuickSkillPills();
+    validateSkills();
+  }
+}
+
+function removeSkill(skillName) {
+  state.selectedSkills = state.selectedSkills.filter(s => s.toLowerCase() !== skillName.toLowerCase());
+  renderSkillTags();
+  renderSkillsDropdown(dom.skillInput ? dom.skillInput.value.trim() : '');
+  updateQuickSkillPills();
+  validateSkills();
+}
+
+function toggleSkill(skillName) {
+  const exists = state.selectedSkills.some(s => s.toLowerCase() === skillName.toLowerCase());
+  if (exists) {
+    removeSkill(skillName);
+  } else {
+    addSkill(skillName);
+  }
+}
+
+function renderSkillTags() {
+  if (!dom.skillsTagsContainer) return;
+  dom.skillsTagsContainer.innerHTML = '';
+
+  state.selectedSkills.forEach((skill) => {
+    const tag = document.createElement('span');
+    tag.className = 'skill-tag';
+    tag.innerHTML = `
+      <span>${escapeHtml(skill)}</span>
+      <button type="button" class="skill-tag-remove" aria-label="Remove ${escapeHtml(skill)}" data-skill="${escapeHtml(skill)}">&times;</button>
+    `;
+
+    tag.querySelector('.skill-tag-remove').addEventListener('click', (e) => {
+      e.stopPropagation();
+      removeSkill(skill);
+      dom.skillInput.focus();
+    });
+
+    dom.skillsTagsContainer.appendChild(tag);
+  });
+}
+
+function renderSkillsDropdown(filterText = '') {
+  if (!dom.skillsDropdownMenu) return;
+  dom.skillsDropdownMenu.innerHTML = '';
+  activeSkillsDropdownIndex = -1;
+
+  const query = filterText.toLowerCase();
+  const filtered = POPULAR_SKILLS.filter(item =>
+    item.name.toLowerCase().includes(query) || item.category.toLowerCase().includes(query)
+  );
+
+  // If user typed custom query not exact matched in popular skills, offer custom add option
+  if (query && !POPULAR_SKILLS.some(item => item.name.toLowerCase() === query)) {
+    const customOption = document.createElement('div');
+    customOption.className = 'dropdown-item';
+    customOption.dataset.skill = filterText;
+    customOption.innerHTML = `
+      <div class="dropdown-item-left">
+        <span style="color: var(--secondary); font-weight:700;">+ Add "${escapeHtml(filterText)}"</span>
+      </div>
+      <span class="item-category">Custom Skill</span>
+    `;
+
+    customOption.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      addSkill(filterText);
+      dom.skillInput.value = '';
+      renderSkillsDropdown('');
+      dom.skillInput.focus();
+    });
+
+    dom.skillsDropdownMenu.appendChild(customOption);
+  }
+
+  if (filtered.length === 0 && !query) {
+    const emptyEl = document.createElement('div');
+    emptyEl.className = 'dropdown-empty';
+    emptyEl.textContent = 'Type to search or add custom skills.';
+    dom.skillsDropdownMenu.appendChild(emptyEl);
+    return;
+  }
+
+  filtered.forEach((item) => {
+    const isSelected = state.selectedSkills.some(s => s.toLowerCase() === item.name.toLowerCase());
+    const li = document.createElement('div');
+    li.className = `dropdown-item ${isSelected ? 'selected' : ''}`;
+    li.dataset.skill = item.name;
+    li.setAttribute('role', 'option');
+    li.innerHTML = `
+      <div class="dropdown-item-left">
+        ${isSelected ? '<span class="item-check">✓</span>' : ''}
+        <span>${highlightMatch(item.name, query)}</span>
+      </div>
+      <span class="item-category">${item.category}</span>
+    `;
+
+    li.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      toggleSkill(item.name);
+      renderSkillsDropdown(dom.skillInput.value.trim());
+      dom.skillInput.focus();
+    });
+
+    dom.skillsDropdownMenu.appendChild(li);
+  });
+}
+
+function updateSkillsDropdownActiveItem(items) {
+  items.forEach((item, i) => {
+    if (i === activeSkillsDropdownIndex) {
+      item.classList.add('active');
+      item.scrollIntoView({ block: 'nearest' });
+    } else {
+      item.classList.remove('active');
+    }
+  });
+}
+
+function setupQuickSkills() {
+  if (!dom.quickSkillsContainer) return;
+  const pills = dom.quickSkillsContainer.querySelectorAll('.quick-skill-pill');
+  pills.forEach((pill) => {
+    pill.addEventListener('click', (e) => {
+      e.preventDefault();
+      const skillName = pill.dataset.skill;
+      toggleSkill(skillName);
+      dom.skillInput.focus();
+    });
+  });
+  updateQuickSkillPills();
+}
+
+function updateQuickSkillPills() {
+  if (!dom.quickSkillsContainer) return;
+  const pills = dom.quickSkillsContainer.querySelectorAll('.quick-skill-pill');
+  pills.forEach((pill) => {
+    const skillName = pill.dataset.skill;
+    const isSelected = state.selectedSkills.some(s => s.toLowerCase() === skillName.toLowerCase());
+    if (isSelected) {
+      pill.classList.add('selected');
+      pill.textContent = `✓ ${skillName.replace('.js', '')}`;
+    } else {
+      pill.classList.remove('selected');
+      pill.textContent = `+ ${skillName.replace('.js', '')}`;
+    }
+  });
+}
+
+function escapeHtml(str) {
+  return str.replace(/[&<>'"]/g, 
+    tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+  );
+}
+
+function validateSkills() {
+  // If user typed something in the input but forgot to hit enter, auto add it
+  if (dom.skillInput && dom.skillInput.value.trim() !== '') {
+    addSkill(dom.skillInput.value.trim());
+    dom.skillInput.value = '';
+  }
+
+  const isValid = state.selectedSkills.length > 0;
+  if (dom.tagsInputWrapper && dom.skillsError) {
+    if (isValid) {
+      dom.tagsInputWrapper.classList.remove('invalid');
+      dom.skillsError.style.display = 'none';
+    } else {
+      dom.tagsInputWrapper.classList.add('invalid');
+      dom.skillsError.style.display = 'block';
+    }
+  }
+  return isValid;
+}
+
+// ==========================================================================
 // Form Validation Logic
 // ==========================================================================
 function validateField(inputEl, errorEl) {
@@ -344,7 +754,7 @@ function validateForm() {
   const isNameValid = validateField(dom.candidateName, dom.nameError);
   const isRoleValid = validateField(dom.jobRole, dom.roleError);
   const isCompanyValid = validateField(dom.companyName, dom.companyError);
-  const isSkillsValid = validateField(dom.jobDescription, dom.skillsError);
+  const isSkillsValid = validateSkills();
   
   return isNameValid && isRoleValid && isCompanyValid && isSkillsValid;
 }
@@ -465,14 +875,17 @@ function showPdfStatus(type, message) {
   }
 }
 
-// ==========================================================================
+// 
 // Simulation Generator (Phase 1 MVP Fallback)
-// ==========================================================================
-function generateSimulatedLetter(name, role, company, skills, resumeText) {
+// 
+function generateSimulatedLetter(name, role, company, skills, jobDescription, resumeText) {
   const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   const resumeContextSection = resumeText 
     ? `\n\nHaving parsed my attached background summary showing significant achievements, I am confident in connecting my past accomplishments with your current requirements.`
     : '';
+
+  const skillsText = skills || 'specialized technical and leadership capabilities';
+  const jdContext = jobDescription ? ` Specifically matching your requirements for this role, I focus on delivering scalable, reliable results.` : '';
 
   return `# ${name}
 **Contact:** Professional Profile Attached | Generated by Coverly AI
@@ -484,9 +897,9 @@ Subject: Application for **${role}** position
 
 Dear Hiring Manager,
 
-I am writing to express my strong interest in the **${role}** position at **${company}**. With a strong alignment in core technical skills and professional goals, I am excited about the opportunity to contribute to your team's upcoming initiatives.
+I am writing to express my strong interest in the **${role}** position at **${company}**. With a strong alignment in core technical capabilities and professional goals, I am excited about the opportunity to contribute to your team's upcoming initiatives.
 
-Based on your current requirements, I bring specialized experience in **${skills}**. Throughout my career, I have prioritized high-quality executions, clean system architectures, and matching user expectations with robust software structures.${resumeContextSection}
+Based on your current requirements, I bring specialized experience in **${skillsText}**.${jdContext} Throughout my career, I have prioritized high-quality executions, clean system architectures, and matching user expectations with robust software structures.${resumeContextSection}
 
 At **${company}**, I see an organization that values innovation and impact. I am eager to apply my key skillsets to solve complex problems and contribute to your business objectives.
 
@@ -543,9 +956,9 @@ function showLoading(show) {
   }
 }
 
-// ==========================================================================
+// 
 // Gemini API call & Serverless Proxy Router
-// ==========================================================================
+// 
 async function handleFormSubmit(e) {
   e.preventDefault();
   
@@ -559,28 +972,27 @@ async function handleFormSubmit(e) {
   const name = dom.candidateName.value.trim();
   const role = dom.jobRole.value.trim();
   const company = dom.companyName.value.trim();
-  const skills = dom.jobDescription.value.trim();
+  const skills = state.selectedSkills.join(', ');
+  const jobDescription = dom.jobDescription ? dom.jobDescription.value.trim() : '';
   const resume = state.resumeText.trim();
   
   showLoading(true);
   
-  // Decide whether to run Simulation or AI mode
-  const apiMode = state.apiKey ? 'direct' : 'proxy';
-  
   try {
     let coverLetterMarkdown = '';
     
-    if (apiMode === 'direct') {
-      coverLetterMarkdown = await fetchGeminiDirect(name, role, company, skills, resume);
+    if (state.apiKey) {
+      // User has manually entered their own API key via Settings → use direct call
+      coverLetterMarkdown = await fetchGeminiDirect(name, role, company, skills, jobDescription, resume);
     } else {
-      // Check if proxy serverless route works
+      // DEFAULT: Use secure serverless proxy (API key stays on server)
       try {
-        coverLetterMarkdown = await fetchGeminiProxy(name, role, company, skills, resume);
+        coverLetterMarkdown = await fetchGeminiProxy(name, role, company, skills, jobDescription, resume);
       } catch (proxyError) {
-        console.warn('Proxy generation failed or not set up. Falling back to Simulation Mode.', proxyError);
-        // Fallback to Phase 1 Simulation Mode
-        await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate work latency
-        coverLetterMarkdown = generateSimulatedLetter(name, role, company, skills, resume);
+        console.warn('Serverless proxy failed. Falling back to Simulation Mode.', proxyError);
+        // Fallback to Simulation Mode
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        coverLetterMarkdown = generateSimulatedLetter(name, role, company, skills, jobDescription, resume);
         showToast('Running in Simulation Mode (Fallback)');
       }
     }
@@ -594,7 +1006,7 @@ async function handleFormSubmit(e) {
     showToast('Failed to generate. Please check API Key/Connection.', 'error');
     
     // Safe Fallback to simulation
-    const coverLetterMarkdown = generateSimulatedLetter(name, role, company, skills, resume);
+    const coverLetterMarkdown = generateSimulatedLetter(name, role, company, skills, jobDescription, resume);
     state.generatedMarkdown = coverLetterMarkdown;
     renderOutputLetter(coverLetterMarkdown);
   } finally {
@@ -603,9 +1015,17 @@ async function handleFormSubmit(e) {
 }
 
 // Construct LLM Prompts
-function buildSystemPrompt(name, role, company, skills, resumeText) {
+function buildSystemPrompt(name, role, company, skills, jobDescription, resumeText) {
   const resumeSnippet = resumeText 
-    ? `Candidate Resume Details (Parsed from PDF):\n${resumeText}\n` 
+    ? `\nCandidate Resume Details (Parsed from PDF):\n${resumeText}\n` 
+    : '';
+
+  const skillsSnippet = skills 
+    ? `- Candidate Key Skills: ${skills}` 
+    : '';
+
+  const jdSnippet = jobDescription 
+    ? `- Target Job Description / Requirements: ${jobDescription}` 
     : '';
 
   return `You are a highly seasoned executive career consultant. Your objective is to write an exceptionally professional, personalized, and high-impact cover letter for ${name} applying for the ${role} position at ${company}.
@@ -614,7 +1034,8 @@ Key inputs:
 - Candidate Name: ${name}
 - Target Role: ${role}
 - Target Company: ${company}
-- Key Skills/JD Requirements: ${skills}
+${skillsSnippet}
+${jdSnippet}
 ${resumeSnippet}
 
 Guidelines to ensure it DOES NOT sound AI-generated:
@@ -624,16 +1045,16 @@ Guidelines to ensure it DOES NOT sound AI-generated:
 4. Structure the cover letter neatly:
    - Header: Candidate Name, Target Role, and Target Company info.
    - Opening Hook: Instant value hook connecting candidate's focus to the company's domain or target challenge.
-   - Core Accomplishment Paragraph: Combine key skills (${skills}) and resume details to show direct proof of ability. Don't just list skills; state achievements and outcomes.
+   - Core Accomplishment Paragraph: Combine candidate's key skills (${skills}) and target job requirements (${jobDescription || role}) along with resume details to show direct proof of ability. Don't just list skills; state achievements and outcomes.
    - Alignment Paragraph: Showcase specific context showing why this company (${company}) is a logical next step (use details from the JD/skills to show you researched them).
    - Professional closing: Brief, call to action regarding interviews, and sign-off.
 5. Keep the length balanced (around 250 - 350 words). Ensure there are clean markdown headings and paragraphs. DO NOT output code blocks or generic wrappers. Just output the clean cover letter text in markdown.`;
 }
 
 // Direct Call to Google Gemini API
-async function fetchGeminiDirect(name, role, company, skills, resumeText) {
+async function fetchGeminiDirect(name, role, company, skills, jobDescription, resumeText) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${state.apiKey}`;
-  const prompt = buildSystemPrompt(name, role, company, skills, resumeText);
+  const prompt = buildSystemPrompt(name, role, company, skills, jobDescription, resumeText);
   
   const response = await fetch(url, {
     method: 'POST',
@@ -667,14 +1088,14 @@ async function fetchGeminiDirect(name, role, company, skills, resumeText) {
 }
 
 // Serverless Function Request
-async function fetchGeminiProxy(name, role, company, skills, resumeText) {
+async function fetchGeminiProxy(name, role, company, skills, jobDescription, resumeText) {
   const url = '/api/generate';
   const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ name, role, company, skills, resumeText })
+    body: JSON.stringify({ name, role, company, skills, jobDescription, resumeText })
   });
   
   if (!response.ok) {
@@ -758,7 +1179,7 @@ function handleDownloadTxt() {
   showToast('Text file downloaded successfully!');
 }
 
-// ==========================================================================
+// 
 // Settings Modal & API Key Storage
 // ==========================================================================
 function openSettingsModal() {
