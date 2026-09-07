@@ -81,9 +81,11 @@ const dom = {
   saveSettingsBtn: document.getElementById('saveSettingsBtn'),
   apiStatusMessage: document.getElementById('apiStatusMessage'),
 
-  // Toast
+  // Toast & Floating Controls
   toast: document.getElementById('toastNotification'),
-  toastMessage: document.getElementById('toastMessage')
+  toastMessage: document.getElementById('toastMessage'),
+  scrollToTopBtn: document.getElementById('scrollToTopBtn'),
+  panelPreview: document.querySelector('.panel-preview')
 };
 
 // 
@@ -157,6 +159,19 @@ function setupEventListeners() {
   dom.toggleApiKeyBtn.addEventListener('click', toggleApiKeyVisibility);
   dom.testKeyBtn.addEventListener('click', handleTestApiKey);
   dom.saveSettingsBtn.addEventListener('click', handleSaveSettings);
+
+  // Floating Back to Top Scroll Control
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 250) {
+      dom.scrollToTopBtn.classList.remove('hidden');
+    } else {
+      dom.scrollToTopBtn.classList.add('hidden');
+    }
+  });
+
+  dom.scrollToTopBtn.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
 }
 
 // Custom Job Role Dropdown Logic
@@ -1128,8 +1143,11 @@ function renderOutputLetter(markdown) {
   dom.previewActions.classList.remove('disabled');
   dom.previewActions.querySelectorAll('button').forEach(btn => btn.disabled = false);
 
-  // Scroll to output
+  // Scroll to output smoothly
   dom.letterOutputWrapper.scrollTop = 0;
+  if (dom.panelPreview) {
+    dom.panelPreview.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
   dom.letterOutput.focus();
 }
 
