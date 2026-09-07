@@ -1345,56 +1345,73 @@ button {
 }
 
 /* 
-   Print Styles for Document Downloads
+   Print Styles for Document & PDF Export
    */
 @media print {
-  body * {
-    visibility: hidden;
+  @page {
+    size: A4 portrait;
+    margin: 8mm 12mm 8mm 12mm;
   }
-  #letterOutputWrapper, #letterOutputWrapper * {
-    visibility: visible;
-  }
-  #letterOutputWrapper {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    color: black !important;
-    background: white !important;
+
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
     padding: 0 !important;
   }
-  .letter-output {
-    color: black !important;
-  }
-  .letter-output strong {
-    color: black !important;
-  }
-  .letter-output h1, .letter-output h2, .letter-output h3 {
-    color: black !important;
-  }
-}
-
-/* Print Styles for PDF Download */
-@media print {
+  
   body * {
     visibility: hidden;
   }
+  
   #letterOutput, #letterOutput * {
     visibility: visible;
   }
+  
   #letterOutput {
     position: absolute;
     left: 0;
     top: 0;
     width: 100%;
-    margin: 0;
-    padding: 20mm;
-    color: black !important;
-    background: white !important;
-    font-size: 12pt;
-    line-height: 1.5;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: #000000 !important;
+    background: #ffffff !important;
+    font-size: 10pt;
+    line-height: 1.45;
+    font-family: 'Plus Jakarta Sans', Arial, sans-serif;
   }
-  .bg-gradient-top, .bg-gradient-bottom, .navbar, .app-footer, .input-section {
+
+  #letterOutput > *:first-child {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  #letterOutput h1, 
+  #letterOutput h2, 
+  #letterOutput h3 {
+    color: #000000 !important;
+    background: transparent !important;
+    margin-top: 0.5rem !important;
+    margin-bottom: 0.35rem !important;
+    font-size: 1.25rem !important;
+  }
+
+  #letterOutput p {
+    color: #000000 !important;
+    background: transparent !important;
+    margin-top: 0 !important;
+    margin-bottom: 0.65rem !important;
+  }
+
+  #letterOutput strong, 
+  #letterOutput li,
+  #letterOutput span {
+    color: #000000 !important;
+    background: transparent !important;
+  }
+
+  .glow-bg, .app-header, .panel-input, .panel-title, .panel-description, .preview-actions, .app-footer, .modal-backdrop, .toast {
     display: none !important;
   }
 }

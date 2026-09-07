@@ -20,7 +20,7 @@ const dom = {
   roleDropdownToggle: document.getElementById('roleDropdownToggle'),
   roleDropdownMenu: document.getElementById('roleDropdownMenu'),
   companyName: document.getElementById('companyName'),
-  
+
   // Skills Multi-Select elements
   tagsInputWrapper: document.getElementById('tagsInputWrapper'),
   skillsTagsContainer: document.getElementById('skillsTagsContainer'),
@@ -29,16 +29,16 @@ const dom = {
   skillsDropdownMenu: document.getElementById('skillsDropdownMenu'),
   quickSkillsContainer: document.getElementById('quickSkillsContainer'),
   skillsError: document.getElementById('skillsError'),
-  
+
   // Job Description
   jobDescription: document.getElementById('jobDescription'),
   jobDescError: document.getElementById('jobDescError'),
-  
+
   // Errors
   nameError: document.getElementById('nameError'),
   roleError: document.getElementById('roleError'),
   companyError: document.getElementById('companyError'),
-  
+
   // Resume elements
   dropzone: document.getElementById('dropzone'),
   resumeUpload: document.getElementById('resumeUpload'),
@@ -47,10 +47,10 @@ const dom = {
   removeFileBtn: document.getElementById('removeFileBtn'),
   pdfSuccessMsg: document.getElementById('pdfSuccessMsg'),
   pdfErrorMsg: document.getElementById('pdfErrorMsg'),
-  
+
   // Submit
   submitBtn: document.getElementById('submitBtn'),
-  
+
   // Output Panels
   emptyState: document.getElementById('emptyState'),
   loadingState: document.getElementById('loadingState'),
@@ -59,18 +59,18 @@ const dom = {
   progressBar: document.getElementById('progressBar'),
   letterOutputWrapper: document.getElementById('letterOutputWrapper'),
   letterOutput: document.getElementById('letterOutput'),
-  
+
   // Action Buttons
   previewActions: document.getElementById('previewActions'),
   copyBtn: document.getElementById('copyBtn'),
   copyBtnText: document.getElementById('copyBtnText'),
   downloadPdfBtn: document.getElementById('downloadPdfBtn'),
   downloadTxtBtn: document.getElementById('downloadTxtBtn'),
-  
+
   // Badges
   apiStatusBadge: document.getElementById('apiStatusBadge'),
   apiStatusText: document.getElementById('apiStatusText'),
-  
+
   // Settings Modal
   settingsBtn: document.getElementById('settingsBtn'),
   settingsModal: document.getElementById('settingsModal'),
@@ -80,23 +80,23 @@ const dom = {
   testKeyBtn: document.getElementById('testKeyBtn'),
   saveSettingsBtn: document.getElementById('saveSettingsBtn'),
   apiStatusMessage: document.getElementById('apiStatusMessage'),
-  
+
   // Toast
   toast: document.getElementById('toastNotification'),
   toastMessage: document.getElementById('toastMessage')
 };
 
-// ==========================================================================
+// 
 // Initialization & Setup
-// ==========================================================================
+// 
 document.addEventListener('DOMContentLoaded', () => {
   // Update badge and inputs based on key state
   updateApiStatusIndicator();
-  
+
   if (state.apiKey) {
     dom.apiKeyInput.value = state.apiKey;
   }
-  
+
   setupEventListeners();
   setupJobRoleDropdown();
   setupSkillsDropdown();
@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function setupEventListeners() {
   // Form submission
   dom.form.addEventListener('submit', handleFormSubmit);
-  
+
   // Input validations on blur
   dom.candidateName.addEventListener('blur', () => validateField(dom.candidateName, dom.nameError));
   dom.jobRole.addEventListener('blur', () => {
@@ -113,13 +113,13 @@ function setupEventListeners() {
     setTimeout(() => validateField(dom.jobRole, dom.roleError), 150);
   });
   dom.companyName.addEventListener('blur', () => validateField(dom.companyName, dom.companyError));
-  
+
   if (dom.jobDescription) {
     dom.jobDescription.addEventListener('blur', () => {
       if (dom.jobDescError) validateField(dom.jobDescription, dom.jobDescError);
     });
   }
-  
+
   // File Dropzone Events
   dom.dropzone.addEventListener('click', () => dom.resumeUpload.click());
   dom.dropzone.addEventListener('keydown', (e) => {
@@ -128,32 +128,32 @@ function setupEventListeners() {
       dom.resumeUpload.click();
     }
   });
-  
+
   dom.dropzone.addEventListener('dragover', (e) => {
     e.preventDefault();
     dom.dropzone.classList.add('dragover');
   });
-  
+
   dom.dropzone.addEventListener('dragleave', () => {
     dom.dropzone.classList.remove('dragover');
   });
-  
+
   dom.dropzone.addEventListener('drop', handleFileDrop);
   dom.resumeUpload.addEventListener('change', handleFileSelect);
   dom.removeFileBtn.addEventListener('click', handleRemoveFile);
-  
+
   // Exporters
   dom.copyBtn.addEventListener('click', handleCopyToClipboard);
   dom.downloadPdfBtn.addEventListener('click', handleDownloadPdf);
   dom.downloadTxtBtn.addEventListener('click', handleDownloadTxt);
-  
+
   // Settings Modal Events
   dom.settingsBtn.addEventListener('click', openSettingsModal);
   dom.closeSettingsBtn.addEventListener('click', closeSettingsModal);
   dom.settingsModal.addEventListener('click', (e) => {
     if (e.target === dom.settingsModal) closeSettingsModal();
   });
-  
+
   dom.toggleApiKeyBtn.addEventListener('click', toggleApiKeyVisibility);
   dom.testKeyBtn.addEventListener('click', handleTestApiKey);
   dom.saveSettingsBtn.addEventListener('click', handleSaveSettings);
@@ -258,9 +258,9 @@ function setupJobRoleDropdown() {
 
   // Close when clicking outside
   document.addEventListener('click', (e) => {
-    if (!dom.jobRole.contains(e.target) && 
-        !dom.roleDropdownMenu.contains(e.target) && 
-        !(dom.roleDropdownToggle && dom.roleDropdownToggle.contains(e.target))) {
+    if (!dom.jobRole.contains(e.target) &&
+      !dom.roleDropdownMenu.contains(e.target) &&
+      !(dom.roleDropdownToggle && dom.roleDropdownToggle.contains(e.target))) {
       closeRoleDropdown();
     }
   });
@@ -286,7 +286,7 @@ function renderRoleDropdown(filterText = '') {
   activeDropdownIndex = -1;
 
   const query = filterText.toLowerCase();
-  const filtered = POPULAR_JOB_ROLES.filter(item => 
+  const filtered = POPULAR_JOB_ROLES.filter(item =>
     item.role.toLowerCase().includes(query) || item.category.toLowerCase().includes(query)
   );
 
@@ -340,12 +340,12 @@ function selectRoleItem(roleName) {
   dom.jobRole.value = roleName;
   validateField(dom.jobRole, dom.roleError);
   closeRoleDropdown();
-  dom.jobRole.focus();
+  dom.jobRole.focus()
 }
 
-// ==========================================================================
+// 
 // Multi-Select Key Skills Logic
-// ==========================================================================
+// 
 const POPULAR_SKILLS = [
   // Programming & Frontend
   { name: 'JavaScript', category: 'Frontend' },
@@ -528,7 +528,7 @@ function setupSkillsDropdown() {
   // Close when clicking outside
   document.addEventListener('click', (e) => {
     if (!dom.tagsInputWrapper.contains(e.target) &&
-        !dom.skillsDropdownMenu.contains(e.target)) {
+      !dom.skillsDropdownMenu.contains(e.target)) {
       closeSkillsDropdown();
     }
   });
@@ -710,7 +710,7 @@ function updateQuickSkillPills() {
 }
 
 function escapeHtml(str) {
-  return str.replace(/[&<>'"]/g, 
+  return str.replace(/[&<>'"]/g,
     tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
   );
 }
@@ -735,9 +735,9 @@ function validateSkills() {
   return isValid;
 }
 
-// ==========================================================================
+// 
 // Form Validation Logic
-// ==========================================================================
+// 
 function validateField(inputEl, errorEl) {
   const isValid = inputEl.value.trim() !== '';
   if (isValid) {
@@ -755,17 +755,17 @@ function validateForm() {
   const isRoleValid = validateField(dom.jobRole, dom.roleError);
   const isCompanyValid = validateField(dom.companyName, dom.companyError);
   const isSkillsValid = validateSkills();
-  
+
   return isNameValid && isRoleValid && isCompanyValid && isSkillsValid;
 }
 
-// ==========================================================================
+// 
 // Drag & Drop / PDF Extract Logic (PDF.js Integration)
-// ==========================================================================
+// 
 function handleFileDrop(e) {
   e.preventDefault();
   dom.dropzone.classList.remove('dragover');
-  
+
   const files = e.dataTransfer.files;
   if (files.length > 0) {
     processUploadedFile(files[0]);
@@ -784,22 +784,22 @@ function processUploadedFile(file) {
     showPdfStatus('error', 'Please upload a PDF document.');
     return;
   }
-  
+
   if (file.size > 5 * 1024 * 1024) {
     showPdfStatus('error', 'File size exceeds 5MB limit.');
     return;
   }
-  
+
   // Show file info in UI
   dom.fileName.textContent = file.name;
   dom.dropzone.querySelector('.dropzone-content').classList.add('hidden');
   dom.fileInfo.classList.remove('hidden');
-  
+
   // Read and parse PDF
   showPdfStatus('loading', 'Parsing resume content...');
-  
+
   const reader = new FileReader();
-  reader.onload = async function() {
+  reader.onload = async function () {
     try {
       const arrayBuffer = this.result;
       const text = await extractTextFromPdfBuffer(arrayBuffer);
@@ -810,11 +810,11 @@ function processUploadedFile(file) {
       showPdfStatus('error', 'Could not extract text. PDF might be scanned or protected.');
     }
   };
-  
+
   reader.onerror = () => {
     showPdfStatus('error', 'Error reading file.');
   };
-  
+
   reader.readAsArrayBuffer(file);
 }
 
@@ -823,25 +823,25 @@ async function extractTextFromPdfBuffer(arrayBuffer) {
   if (typeof pdfjsLib === 'undefined') {
     throw new Error('PDF.js library is not loaded yet. Check internet connection.');
   }
-  
+
   // Configure PDF.js Worker Src
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
-  
+
   const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
   const pdf = await loadingTask.promise;
   let fullText = '';
-  
+
   for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i);
     const textContent = await page.getTextContent();
     const pageText = textContent.items.map(item => item.str).join(' ');
     fullText += pageText + '\n';
   }
-  
+
   if (fullText.trim().length === 0) {
     throw new Error('No text found in PDF');
   }
-  
+
   return fullText;
 }
 
@@ -850,9 +850,9 @@ function handleRemoveFile(e) {
   dom.resumeUpload.value = '';
   dom.fileInfo.classList.add('hidden');
   dom.dropzone.querySelector('.dropzone-content').classList.remove('hidden');
-  
+
   state.resumeText = '';
-  
+
   dom.pdfSuccessMsg.classList.add('hidden');
   dom.pdfErrorMsg.classList.add('hidden');
 }
@@ -860,7 +860,7 @@ function handleRemoveFile(e) {
 function showPdfStatus(type, message) {
   dom.pdfSuccessMsg.classList.add('hidden');
   dom.pdfErrorMsg.classList.add('hidden');
-  
+
   if (type === 'success') {
     dom.pdfSuccessMsg.textContent = message;
     dom.pdfSuccessMsg.classList.remove('hidden');
@@ -880,7 +880,7 @@ function showPdfStatus(type, message) {
 // 
 function generateSimulatedLetter(name, role, company, skills, jobDescription, resumeText) {
   const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-  const resumeContextSection = resumeText 
+  const resumeContextSection = resumeText
     ? `\n\nHaving parsed my attached background summary showing significant achievements, I am confident in connecting my past accomplishments with your current requirements.`
     : '';
 
@@ -910,22 +910,22 @@ Sincerely,
 **${name}**`;
 }
 
-// ==========================================================================
+// 
 // AI Generating Loading Animation states
-// ==========================================================================
+// 
 let loadingInterval = null;
 
 function showLoading(show) {
   state.isGenerating = show;
   dom.submitBtn.disabled = show;
-  
+
   if (show) {
     dom.emptyState.classList.add('hidden');
     dom.letterOutputWrapper.classList.add('hidden');
     dom.previewActions.classList.add('disabled');
     dom.previewActions.querySelectorAll('button').forEach(btn => btn.disabled = true);
     dom.loadingState.classList.remove('hidden');
-    
+
     // Animate loader texts
     const statuses = [
       { pct: 15, title: 'Initiating Generator', desc: 'Analyzing state variables and inputs...' },
@@ -934,12 +934,12 @@ function showLoading(show) {
       { pct: 85, title: 'Refining Persona', desc: 'Drafting professional, non-robotic tone...' },
       { pct: 98, title: 'Finalizing Letter', desc: 'Optimizing layout, paragraphs, and styles...' }
     ];
-    
+
     let stepIndex = 0;
     dom.progressBar.style.width = '0%';
     dom.loadingTitle.textContent = statuses[0].title;
     dom.loadingDesc.textContent = statuses[0].desc;
-    
+
     loadingInterval = setInterval(() => {
       if (stepIndex < statuses.length - 1) {
         stepIndex++;
@@ -948,7 +948,7 @@ function showLoading(show) {
         dom.loadingDesc.textContent = statuses[stepIndex].desc;
       }
     }, 900);
-    
+
   } else {
     clearInterval(loadingInterval);
     dom.loadingState.classList.add('hidden');
@@ -961,26 +961,26 @@ function showLoading(show) {
 // 
 async function handleFormSubmit(e) {
   e.preventDefault();
-  
+
   if (!validateForm()) {
     // Focus first invalid element
     const firstInvalid = dom.form.querySelector('.invalid');
     if (firstInvalid) firstInvalid.focus();
     return;
   }
-  
+
   const name = dom.candidateName.value.trim();
   const role = dom.jobRole.value.trim();
   const company = dom.companyName.value.trim();
   const skills = state.selectedSkills.join(', ');
   const jobDescription = dom.jobDescription ? dom.jobDescription.value.trim() : '';
   const resume = state.resumeText.trim();
-  
+
   showLoading(true);
-  
+
   try {
     let coverLetterMarkdown = '';
-    
+
     if (state.apiKey) {
       // User has manually entered their own API key via Settings → use direct call
       coverLetterMarkdown = await fetchGeminiDirect(name, role, company, skills, jobDescription, resume);
@@ -996,15 +996,15 @@ async function handleFormSubmit(e) {
         showToast('Running in Simulation Mode (Fallback)');
       }
     }
-    
+
     // Save output
     state.generatedMarkdown = coverLetterMarkdown;
     renderOutputLetter(coverLetterMarkdown);
-    
+
   } catch (error) {
     console.error('Generation Error: ', error);
     showToast('Failed to generate. Please check API Key/Connection.', 'error');
-    
+
     // Safe Fallback to simulation
     const coverLetterMarkdown = generateSimulatedLetter(name, role, company, skills, jobDescription, resume);
     state.generatedMarkdown = coverLetterMarkdown;
@@ -1016,16 +1016,16 @@ async function handleFormSubmit(e) {
 
 // Construct LLM Prompts
 function buildSystemPrompt(name, role, company, skills, jobDescription, resumeText) {
-  const resumeSnippet = resumeText 
-    ? `\nCandidate Resume Details (Parsed from PDF):\n${resumeText}\n` 
+  const resumeSnippet = resumeText
+    ? `\nCandidate Resume Details (Parsed from PDF):\n${resumeText}\n`
     : '';
 
-  const skillsSnippet = skills 
-    ? `- Candidate Key Skills: ${skills}` 
+  const skillsSnippet = skills
+    ? `- Candidate Key Skills: ${skills}`
     : '';
 
-  const jdSnippet = jobDescription 
-    ? `- Target Job Description / Requirements: ${jobDescription}` 
+  const jdSnippet = jobDescription
+    ? `- Target Job Description / Requirements: ${jobDescription}`
     : '';
 
   return `You are a highly seasoned executive career consultant. Your objective is to write an exceptionally professional, personalized, and high-impact cover letter for ${name} applying for the ${role} position at ${company}.
@@ -1055,7 +1055,7 @@ Guidelines to ensure it DOES NOT sound AI-generated:
 async function fetchGeminiDirect(name, role, company, skills, jobDescription, resumeText) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${state.apiKey}`;
   const prompt = buildSystemPrompt(name, role, company, skills, jobDescription, resumeText);
-  
+
   const response = await fetch(url, {
     method: 'POST',
     headers: {
@@ -1072,18 +1072,18 @@ async function fetchGeminiDirect(name, role, company, skills, jobDescription, re
       }
     })
   });
-  
+
   if (!response.ok) {
     const errorBody = await response.json().catch(() => ({}));
     throw new Error(errorBody.error?.message || `API HTTP Error status: ${response.status}`);
   }
-  
+
   const data = await response.json();
   const textResult = data.candidates?.[0]?.content?.parts?.[0]?.text;
   if (!textResult) {
     throw new Error('Empty response received from Gemini API');
   }
-  
+
   return textResult;
 }
 
@@ -1097,11 +1097,11 @@ async function fetchGeminiProxy(name, role, company, skills, jobDescription, res
     },
     body: JSON.stringify({ name, role, company, skills, jobDescription, resumeText })
   });
-  
+
   if (!response.ok) {
     throw new Error(`Serverless Proxy error status: ${response.status}`);
   }
-  
+
   const data = await response.json();
   return data.text;
 }
@@ -1109,7 +1109,7 @@ async function fetchGeminiProxy(name, role, company, skills, jobDescription, res
 // Renders markdown output to HTML
 function renderOutputLetter(markdown) {
   dom.letterOutputWrapper.classList.remove('hidden');
-  
+
   // Use Marked library from CDN with fallback parsing
   if (typeof marked !== 'undefined') {
     dom.letterOutput.innerHTML = marked.parse(markdown);
@@ -1123,11 +1123,11 @@ function renderOutputLetter(markdown) {
       })
       .join('');
   }
-  
+
   // Enable exporters
   dom.previewActions.classList.remove('disabled');
   dom.previewActions.querySelectorAll('button').forEach(btn => btn.disabled = false);
-  
+
   // Scroll to output
   dom.letterOutputWrapper.scrollTop = 0;
   dom.letterOutput.focus();
@@ -1138,17 +1138,17 @@ function renderOutputLetter(markdown) {
 // 
 async function handleCopyToClipboard() {
   if (!state.generatedMarkdown) return;
-  
+
   try {
     // Try to copy plain text representation (stripping basic markdown headers for clean pasting)
     const plainText = dom.letterOutput.innerText || state.generatedMarkdown;
     await navigator.clipboard.writeText(plainText);
-    
+
     // Feedback animation
     dom.copyBtnText.textContent = 'Copied!';
     dom.copyBtn.classList.add('success');
     showToast('Cover letter copied to clipboard!');
-    
+
     setTimeout(() => {
       dom.copyBtnText.textContent = 'Copy Letter';
       dom.copyBtn.classList.remove('success');
@@ -1161,76 +1161,27 @@ async function handleCopyToClipboard() {
 
 function handleDownloadTxt() {
   if (!state.generatedMarkdown) return;
-  
+
   const plainText = dom.letterOutput.innerText || state.generatedMarkdown;
   const blob = new Blob([plainText], { type: 'text/plain;charset=utf-8' });
   const url = URL.createObjectURL(blob);
-  
+
   const link = document.createElement('a');
   link.href = url;
   const fileNameSafe = dom.companyName.value.replace(/[^a-z0-9]/gi, '_').toLowerCase();
   link.download = `cover_letter_${fileNameSafe}.txt`;
-  
+
   document.body.appendChild(link);
   link.click();
-  
+
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
   showToast('Text file downloaded successfully!');
 }
 
 function handleDownloadPdf() {
-  if (!state.generatedMarkdown) return;
-  
-  showToast('Generating PDF...');
-  
-  // Create a temporary container that is actually attached to the DOM so html2canvas can see it.
-  // We hide it behind the main app using z-index.
-  const container = document.createElement('div');
-  container.style.position = 'absolute';
-  container.style.top = '0';
-  container.style.left = '0';
-  container.style.width = '800px';
-  container.style.padding = '40px';
-  container.style.backgroundColor = '#ffffff';
-  container.style.color = '#000000';
-  container.style.zIndex = '-9999'; // Hidden behind app
-  
-  // Insert the cover letter HTML
-  container.innerHTML = `
-    <div style="font-family: Arial, sans-serif; font-size: 15px; line-height: 1.6;">
-      ${dom.letterOutput.innerHTML}
-    </div>
-  `;
-  
-  // Force all child elements to be black text so Dark Mode CSS doesn't make them white!
-  const children = container.querySelectorAll('*');
-  children.forEach(child => {
-    child.style.color = '#000000';
-  });
-
-  document.body.appendChild(container);
-  
-  const fileNameSafe = dom.companyName.value.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'company';
-  
-  const opt = {
-    margin:       0.5,
-    filename:     `cover_letter_${fileNameSafe}.pdf`,
-    image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2, windowWidth: 800 },
-    jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-  };
-  
-  if (window.html2pdf) {
-    window.html2pdf().set(opt).from(container).save().then(() => {
-      // Remove the container after the PDF is generated
-      document.body.removeChild(container);
-      showToast('PDF downloaded successfully!');
-    });
-  } else {
-    document.body.removeChild(container);
-    window.print();
-  }
+  if (!state.generatedMarkdown && !dom.letterOutput.innerText) return;
+  window.print();
 }
 
 // 
@@ -1239,7 +1190,7 @@ function handleDownloadPdf() {
 function openSettingsModal() {
   dom.settingsModal.classList.remove('hidden');
   dom.apiKeyInput.focus();
-  
+
   // Clear modal errors
   dom.apiStatusMessage.className = 'api-status-message';
   dom.apiStatusMessage.innerHTML = '';
@@ -1257,14 +1208,14 @@ function toggleApiKeyVisibility() {
 
 async function handleTestApiKey() {
   const testKey = dom.apiKeyInput.value.trim();
-  
+
   if (!testKey) {
     showModalStatus('warning', 'Please enter an API Key to test.');
     return;
   }
-  
+
   showModalStatus('warning', 'Testing connection to Gemini API...');
-  
+
   try {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${testKey}`;
     const response = await fetch(url, {
@@ -1274,7 +1225,7 @@ async function handleTestApiKey() {
         contents: [{ parts: [{ text: 'Respond with the word: Success' }] }]
       })
     });
-    
+
     if (response.ok) {
       showModalStatus('success', 'API Connection Successful!');
     } else {
@@ -1288,7 +1239,7 @@ async function handleTestApiKey() {
 
 function handleSaveSettings() {
   const savedKey = dom.apiKeyInput.value.trim();
-  
+
   if (savedKey) {
     localStorage.setItem('coverly_api_key', savedKey);
     state.apiKey = savedKey;
@@ -1298,7 +1249,7 @@ function handleSaveSettings() {
     state.apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
     showToast('Key cleared. App will default to Environment/Proxy mode.');
   }
-  
+
   updateApiStatusIndicator();
   closeSettingsModal();
 }
@@ -1325,10 +1276,10 @@ let toastTimeout = null;
 
 function showToast(message, type = 'success') {
   clearTimeout(toastTimeout);
-  
+
   dom.toastMessage.textContent = message;
   dom.toast.className = 'toast';
-  
+
   if (type === 'error') {
     dom.toast.classList.add('error');
     dom.toast.querySelector('.toast-icon').textContent = '✗';
@@ -1339,9 +1290,9 @@ function showToast(message, type = 'success') {
     dom.toast.querySelector('.toast-icon').style.color = 'var(--success)';
     dom.toast.querySelector('.toast-icon').style.backgroundColor = 'var(--success-bg)';
   }
-  
+
   dom.toast.classList.remove('hidden');
-  
+
   toastTimeout = setTimeout(() => {
     dom.toast.classList.add('hidden');
   }, 3000);
