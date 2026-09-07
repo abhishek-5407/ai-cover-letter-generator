@@ -1197,8 +1197,21 @@ function handleDownloadTxt() {
   showToast('Text file downloaded successfully!');
 }
 
+function sanitizeTextForPdf(str) {
+  if (!str) return '';
+  return str
+    .replace(/[\u00A0\u1680\u180E\u2000-\u200B\u202F\u205F\u3000]/g, ' ')
+    .replace(/[\u201C\u201D]/g, '"')
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u2013\u2014]/g, '-')
+    .replace(/[\u2022\u2023\u2043\u204C\u204D\u2219]/g, '-')
+    .replace(/\u2026/g, '...')
+    .replace(/[^\x00-\xFF]/g, '');
+}
+
 async function handleDownloadPdf() {
-  if (!state.generatedMarkdown && (!dom.letterOutput || !dom.letterOutput.innerText.trim())) {
+  let rawText = state.generatedMarkdown || (dom.letterOutput ? dom.letterOutput.innerText : '');
+  if (!rawText || !rawText.trim()) {
     showToast('No letter content to download!', 'warning');
     return;
   }
@@ -1209,59 +1222,79 @@ async function handleDownloadPdf() {
 
   showToast('Generating PDF file...', 'info');
 
-  if (typeof html2pdf !== 'undefined') {
-    const container = document.createElement('div');
-    container.style.padding = '30px 40px';
-    container.style.color = '#1e293b';
-    container.style.backgroundColor = '#ffffff';
-    container.style.fontFamily = "'Plus Jakarta Sans', Arial, sans-serif";
-    container.style.fontSize = '14px';
-    container.style.lineHeight = '1.75';
-    container.style.width = '100%';
-
-    container.innerHTML = `
-      <style>
-        div, p, h1, h2, h3, li, span, strong {
-          color: #1e293b !important;
-          background: transparent !important;
-        }
-        h1, h2, h3 {
-          color: #0f172a !important;
-          margin-top: 14px;
-          margin-bottom: 8px;
-          font-weight: 700;
-        }
-        p {
-          margin-bottom: 12px;
-        }
-        ul, ol {
-          margin-bottom: 12px;
-          padding-left: 20px;
-        }
-        li {
-          margin-bottom: 4px;
-        }
-      </style>
-      <div>${dom.letterOutput.innerHTML}</div>
-    `;
-
-    const opt = {
-      margin:       [12, 12, 12, 12],
-      filename:     pdfFileName,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true, logging: false },
-      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-
-    try {
-      await html2pdf().set(opt).from(container).save();
-      showToast('PDF downloaded successfully!');
-    } catch (err) {
-      console.error('html2pdf generation error:', err);
-      window.print();
+  try {
+    const jsPDFConstructor = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+    if (!jsPDFConstructor) {
+      throw new Error('jsPDF engine unavailable');
     }
-  } else {
-    window.print();
+
+    const doc = new jsPDFConstructor({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
+
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 18;
+    const maxLineWidth = pageWidth - (margin * 2);
+
+    let cursorY = 22;
+    const lineHeight = 6.2;
+
+    const paragraphs = rawText.split(/\n\n+/);
+
+    for (let i = 0; i < paragraphs.length; i++) {
+      let para = paragraphs[i].trim();
+      if (!para) continue;
+
+      para = sanitizeTextForPdf(para);
+      if (!para.trim()) continue;
+
+      if (para.startsWith('#')) {
+        const cleanHeading = para.replace(/^#+\s*/, '');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(14);
+        doc.setTextColor(15, 23, 42);
+
+        const headingLines = doc.splitTextToSize(cleanHeading, maxLineWidth);
+        for (const hLine of headingLines) {
+          if (cursorY + 8 > pageHeight - margin) {
+            doc.addPage();
+            cursorY = 20;
+          }
+          doc.text(hLine, margin, cursorY);
+          cursorY += 7;
+        }
+        cursorY += 2;
+        continue;
+      }
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10.5);
+      doc.setTextColor(30, 41, 59);
+
+      const cleanBody = para.replace(/\*\*/g, '').replace(/\*/g, '');
+      const lines = doc.splitTextToSize(cleanBody, maxLineWidth);
+
+      for (let j = 0; j < lines.length; j++) {
+        const line = lines[j];
+        if (cursorY + lineHeight > pageHeight - margin) {
+          doc.addPage();
+          cursorY = 20;
+        }
+        doc.text(line, margin, cursorY);
+        cursorY += lineHeight;
+      }
+
+      cursorY += 3.5;
+    }
+
+    doc.save(pdfFileName);
+    showToast('PDF downloaded successfully!');
+  } catch (err) {
+    console.error('jsPDF generation error:', err);
+    showToast('Failed to generate PDF file. Try Download TXT.', 'error');
   }
 }
 
