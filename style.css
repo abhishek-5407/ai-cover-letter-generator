@@ -1350,68 +1350,89 @@ button {
 @media print {
   @page {
     size: A4 portrait;
-    margin: 8mm 12mm 8mm 12mm;
+    margin: 12mm 15mm 12mm 15mm;
   }
 
   html, body {
     background: #ffffff !important;
-    color: #000000 !important;
+    color: #1e293b !important;
     margin: 0 !important;
     padding: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
   }
-  
-  body * {
-    visibility: hidden;
+
+  /* Hide unnecessary UI elements */
+  .glow-bg, 
+  .app-header, 
+  .panel-input, 
+  .preview-actions, 
+  .app-footer, 
+  .modal-backdrop, 
+  .toast-container,
+  .history-drawer-backdrop,
+  .history-drawer,
+  .history-btn-fixed {
+    display: none !important;
   }
-  
-  #letterOutput, #letterOutput * {
-    visibility: visible;
-  }
-  
-  #letterOutput {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    margin: 0 !important;
-    padding: 0 !important;
-    color: #000000 !important;
+
+  /* Force container elements to render clean white layout without clipping */
+  .app-container, 
+  .workspace-grid, 
+  .panel-output, 
+  .output-content-card,
+  .letter-output-wrapper {
+    display: block !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
     background: #ffffff !important;
-    font-size: 10pt;
-    line-height: 1.45;
-    font-family: 'Plus Jakarta Sans', Arial, sans-serif;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    position: static !important;
   }
 
-  #letterOutput > *:first-child {
-    margin-top: 0 !important;
-    padding-top: 0 !important;
+  .letter-output, 
+  #letterOutput {
+    color: #1e293b !important;
+    background: #ffffff !important;
+    font-size: 11pt !important;
+    line-height: 1.6 !important;
+    font-family: 'Plus Jakarta Sans', Arial, sans-serif !important;
+    visibility: visible !important;
+    display: block !important;
+    position: static !important;
   }
 
-  #letterOutput h1, 
-  #letterOutput h2, 
+  .letter-output h1, 
+  .letter-output h2, 
+  .letter-output h3,
+  #letterOutput h1,
+  #letterOutput h2,
   #letterOutput h3 {
-    color: #000000 !important;
+    color: #0f172a !important;
     background: transparent !important;
-    margin-top: 0.5rem !important;
-    margin-bottom: 0.35rem !important;
-    font-size: 1.25rem !important;
+    margin-top: 1rem !important;
+    margin-bottom: 0.5rem !important;
+    font-weight: 700 !important;
   }
 
+  .letter-output p,
   #letterOutput p {
-    color: #000000 !important;
+    color: #334155 !important;
     background: transparent !important;
-    margin-top: 0 !important;
-    margin-bottom: 0.65rem !important;
+    margin-bottom: 0.75rem !important;
   }
 
-  #letterOutput strong, 
+  .letter-output strong, 
+  .letter-output li,
+  .letter-output span,
+  #letterOutput strong,
   #letterOutput li,
   #letterOutput span {
-    color: #000000 !important;
+    color: #1e293b !important;
     background: transparent !important;
-  }
-
-  .glow-bg, .app-header, .panel-input, .panel-title, .panel-description, .preview-actions, .app-footer, .modal-backdrop, .toast {
-    display: none !important;
   }
 }

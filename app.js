@@ -1179,9 +1179,72 @@ function handleDownloadTxt() {
   showToast('Text file downloaded successfully!');
 }
 
-function handleDownloadPdf() {
-  if (!state.generatedMarkdown && !dom.letterOutput.innerText) return;
-  window.print();
+async function handleDownloadPdf() {
+  if (!state.generatedMarkdown && (!dom.letterOutput || !dom.letterOutput.innerText.trim())) {
+    showToast('No letter content to download!', 'warning');
+    return;
+  }
+
+  const companyRaw = dom.companyName ? dom.companyName.value.trim() : '';
+  const fileNameSafe = companyRaw ? companyRaw.replace(/[^a-z0-9]/gi, '_').toLowerCase() : 'generated';
+  const pdfFileName = `cover_letter_${fileNameSafe}.pdf`;
+
+  showToast('Generating PDF file...', 'info');
+
+  if (typeof html2pdf !== 'undefined') {
+    const container = document.createElement('div');
+    container.style.padding = '30px 40px';
+    container.style.color = '#1e293b';
+    container.style.backgroundColor = '#ffffff';
+    container.style.fontFamily = "'Plus Jakarta Sans', Arial, sans-serif";
+    container.style.fontSize = '14px';
+    container.style.lineHeight = '1.75';
+    container.style.width = '100%';
+
+    container.innerHTML = `
+      <style>
+        div, p, h1, h2, h3, li, span, strong {
+          color: #1e293b !important;
+          background: transparent !important;
+        }
+        h1, h2, h3 {
+          color: #0f172a !important;
+          margin-top: 14px;
+          margin-bottom: 8px;
+          font-weight: 700;
+        }
+        p {
+          margin-bottom: 12px;
+        }
+        ul, ol {
+          margin-bottom: 12px;
+          padding-left: 20px;
+        }
+        li {
+          margin-bottom: 4px;
+        }
+      </style>
+      <div>${dom.letterOutput.innerHTML}</div>
+    `;
+
+    const opt = {
+      margin:       [12, 12, 12, 12],
+      filename:     pdfFileName,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true, logging: false },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    try {
+      await html2pdf().set(opt).from(container).save();
+      showToast('PDF downloaded successfully!');
+    } catch (err) {
+      console.error('html2pdf generation error:', err);
+      window.print();
+    }
+  } else {
+    window.print();
+  }
 }
 
 // 
